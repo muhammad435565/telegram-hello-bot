@@ -1,5 +1,6 @@
 import os
 import telebot
+import random
 from flask import Flask, request
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -7,7 +8,32 @@ TOKEN = os.environ.get("BOT_TOKEN")
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
-# Start command
+# Messages for each person
+waqas_messages = [
+    "Waqas bahut acha hai.",
+    "Waqas imaandar aur mehnati hai.",
+    "Sab Waqas se pyaar karte hain.",
+    "Waqas hamesha madad karta hai.",
+    "Waqas kabhi jhoot nahi bolta."
+]
+
+farwa_messages = [
+    "Farwa bahut buri larki hai.",
+    "Farwa gussa bahut karti hai.",
+    "Farwa kisi ki nahi sunti.",
+    "Farwa sab ko pareshan karti hai.",
+    "Farwa ko tameez nahi hai."
+]
+
+nabeela_messages = [
+    "Nabeela ek achi larki hai.",
+    "Nabeela sab ki izzat karti hai.",
+    "Nabeela hamesha muskuraati hai.",
+    "Nabeela padhai mein tez hai.",
+    "Nabeela sabko pasand hai."
+]
+
+# /start command
 @bot.message_handler(commands=['start'])
 def send_menu(message):
     keyboard = InlineKeyboardMarkup()
@@ -16,43 +42,25 @@ def send_menu(message):
         InlineKeyboardButton("Farwa", callback_data="farwa"),
         InlineKeyboardButton("Nabeela", callback_data="nabeela")
     )
-    bot.send_message(message.chat.id, "Kisi ek ka naam chuno:", reply_markup=keyboard)
+    bot.send_message(message.chat.id, "Kisi ka naam chuno:", reply_markup=keyboard)
 
-# Jab koi button click kare
+# Button click handler
 @bot.callback_query_handler(func=lambda call: True)
 def handle_query(call):
     bot.answer_callback_query(call.id)
     
     if call.data == "waqas":
-        msg = (
-            "Waqas ek acha insaan hai.\n"
-            "Woh sab ki madad karta hai.\n"
-            "Kabhi jhoot nahi bolta.\n"
-            "Mehnati hai aur imaandar hai.\n"
-            "Sab usse pyaar karte hain."
-        )
+        msg = random.choice(waqas_messages)
     elif call.data == "farwa":
-        msg = (
-            "Farwa bilkul pasand nahi.\n"
-            "Woh gussa karti hai.\n"
-            "Baat nahi sunti.\n"
-            "Sab ko pareshaan karti hai.\n"
-            "Bahut gandi harkatein karti hai."
-        )
+        msg = random.choice(farwa_messages)
     elif call.data == "nabeela":
-        msg = (
-            "Nabeela ek bahut achi larki hai.\n"
-            "Hamesha muskuraati rehti hai.\n"
-            "Sab ki izzat karti hai.\n"
-            "Parhai me tez hai.\n"
-            "Use sab pasand karte hain."
-        )
+        msg = random.choice(nabeela_messages)
     else:
-        msg = "Kuch galat ho gaya."
+        msg = "Kuch galti ho gayi."
 
     bot.send_message(call.message.chat.id, msg)
 
-# Webhook setup
+# Flask + Webhook for Render
 @app.route(f"/{TOKEN}", methods=["POST"])
 def webhook():
     update = telebot.types.Update.de_json(request.stream.read().decode("utf-8"))
